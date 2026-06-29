@@ -301,4 +301,108 @@ It helps only when waiting for I/O operations.
 * Use normal `def` for CPU-heavy calculations.
 
 ------
+------
+
+### Important Points 
+
+
+### Short answer
+
+ `async def` without `await` is valid, but usually unnecessary.
+
+```python
+async def root():
+    return {"message": "Hello World"}
+```
+
+This works, but since nothing is being awaited, it behaves almost like a normal function.
+
+***
+
+### Why would someone still use `async` without `await`?
+
+#### 1. Future-proofing
+
+Today:
+
+```python
+async def transfer_money():
+    return {"status": "success"}
+```
+
+Later, you may add:
+
+```python
+async def transfer_money():
+    balance = await check_balance()
+    return {"status": "success"}
+```
+
+The function is already async, so no further changes are needed.
+
+***
+
+#### 2. Consistency in a project
+
+In many FastAPI projects, developers make all route handlers async:
+
+```python
+@app.get("/balance")
+async def balance():
+    return {"balance": 1000}
+
+@app.get("/transactions")
+async def transactions():
+    return {"count": 10}
+```
+
+Even if some endpoints don't currently use `await`, the codebase stays consistent.
+
+***
+
+### Banking Example
+
+Suppose your API only returns static data:
+
+```python
+@app.get("/bank-name")
+async def get_bank_name():
+    return {"bank": "ABC Bank"}
+```
+
+No database call.
+No API call.
+No file access.
+
+Here, `async` doesn't provide much benefit.
+
+A normal function would be fine:
+
+```python
+@app.get("/bank-name")
+def get_bank_name():
+    return {"bank": "ABC Bank"}
+```
+
+***
+
+### Interview Answer
+
+> `async def` without `await` is valid and is often used for consistency or future asynchronous requirements. However, if no asynchronous operation is performed, a normal `def` function is usually sufficient.
+----
+---
+
+## Uvicorn.
+
+`uvicorn main:app reload`
+
+- Unlike the Flask framework, FastAPI doesnt contain any built-in development server. Hence we need Uvicorn. It implements ASGI standards and is lightning fast. ASGI stands for Asynchronous Server Gateway Interface.
+
+- The WSGI (Web Server Gateway Interface the older standard) compliant web servers are not suitable for asyncio applications.
+
+| Framework | Default                | Async Support           |
+| --------- | ---------------------- | ----------------------- |
+| Flask     | WSGI                   | ❌ No                    |
+| Django    | WSGI (old), ASGI (new) | ✅ Yes (modern versions) |
+| FastAPI   | ASGI                   | ✅ Yes (fully async)     |
 
